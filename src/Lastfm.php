@@ -85,7 +85,7 @@ class Lastfm
      */
     public function userTopArtists(string $username): Lastfm
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getTopArtists',
             'user' => $username,
         ]);
@@ -104,7 +104,7 @@ class Lastfm
      */
     public function userTopTracks(string $username): Lastfm
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getTopTracks',
             'user' => $username,
         ]);
@@ -117,14 +117,14 @@ class Lastfm
     /**
      * Get an array of weekly top albums.
      *
-     * @param string    $username
+     * @param string $username
      * @param \DateTime $startdate
      *
      * @return Lastfm
      */
     public function userWeeklyTopAlbums(string $username, \DateTime $startdate): Lastfm
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getWeeklyAlbumChart',
             'user' => $username,
             'from' => $startdate->format('U'),
@@ -139,14 +139,14 @@ class Lastfm
     /**
      * Get an array of weekly top artists.
      *
-     * @param string    $username
+     * @param string $username
      * @param \DateTime $startdate
      *
      * @return Lastfm
      */
     public function userWeeklyTopArtists(string $username, \DateTime $startdate): Lastfm
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getWeeklyArtistChart',
             'user' => $username,
             'from' => $startdate->format('U'),
@@ -161,14 +161,14 @@ class Lastfm
     /**
      * Get an array of weekly top tracks.
      *
-     * @param string    $username
+     * @param string $username
      * @param \DateTime $startdate
      *
      * @return Lastfm
      */
     public function userWeeklyTopTracks(string $username, \DateTime $startdate): Lastfm
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getWeeklyTrackChart',
             'user' => $username,
             'from' => $startdate->format('U'),
@@ -189,7 +189,7 @@ class Lastfm
      */
     public function userWeeklyChartList(string $username): Lastfm
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getWeeklyChartList',
             'user' => $username,
         ]);
@@ -208,7 +208,7 @@ class Lastfm
      */
     public function userRecentTracks(string $username): Lastfm
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getRecentTracks',
             'user' => $username,
         ]);
@@ -228,7 +228,7 @@ class Lastfm
      */
     public function nowListening(string $username)
     {
-        $this->query = array_merge($this->query, [
+        $this->updateQuery([
             'method' => 'user.getRecentTracks',
             'user' => $username,
         ]);
@@ -249,17 +249,16 @@ class Lastfm
      *
      * @param string $period
      *
+     * @return $this
      * @throws InvalidPeriodException
      *
-     * @return $this
      */
     public function period(string $period)
     {
         if (!in_array($period, Constants::PERIODS)) {
             throw new InvalidPeriodException('Request period is not valid. Valid values are defined in \Barryvanveen\Lastfm\Constants::PERIODS.');
         }
-
-        $this->query = array_merge($this->query ?? [], ['period' => $period]);
+        $this->updateQuery(['period' => $period]);
 
         return $this;
     }
@@ -273,7 +272,7 @@ class Lastfm
      */
     public function limit(int $limit)
     {
-        $this->query = array_merge($this->query ?? [], ['limit' => $limit]);
+        $this->updateQuery(['limit' => $limit]);
 
         return $this;
     }
@@ -287,9 +286,34 @@ class Lastfm
      */
     public function page(int $page)
     {
-        $this->query = array_merge($this->query ?? [], ['page' => $page]);
+        $this->updateQuery(['page' => $page]);
 
         return $this;
+    }
+
+    public function updateQuery($query)
+    {
+        $this->query = array_merge($this->query ?? [], $query);
+    }
+
+    /**
+     * Return the playCount sum for a given request
+     * @return int
+     */
+    public function playCountSum(): int
+    {
+        $playCount = 0;
+        for ($page = 1; ; $page++) {
+            $this->updateQuery(['page' => $page]);
+            $results = $this->get();
+            if (empty($results)) {
+                break;
+            }
+            foreach ($results as $result) {
+                $playCount += $result['playcount'];
+            }
+        }
+        return $playCount;
     }
 
     /**

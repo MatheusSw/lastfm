@@ -27,6 +27,6 @@
         <log type="coverage-clover" target="build/logs/clover.xml"/>
     </logging>
     <php>
-        <env name="LASTFM_API_KEY" value="foo"/>
+        <env name="LASTFM_API_KEY" value="9c39ba609baf9ea33a96cd712281caf9"/>
     </php>
 </phpunit>
