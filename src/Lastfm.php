@@ -291,16 +291,17 @@ class Lastfm
         return $this;
     }
 
-    public function updateQuery($query)
+    private function updateQuery($query)
     {
         $this->query = array_merge($this->query ?? [], $query);
     }
 
     /**
      * Return the playCount sum for a given request
+     *
      * @return int
      */
-    public function playCountSum(): int
+    public function getPlayCountSum(): int
     {
         $playCount = 0;
         for ($page = 1; ; $page++) {

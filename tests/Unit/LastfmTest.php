@@ -18,9 +18,9 @@ use Tests\TestCase;
 class LastfmTest extends TestCase
 {
     /**
-     * @param int    $code
+     * @param int $code
      * @param string $response
-     * @param array  $callHistory
+     * @param array $callHistory
      *
      * @return Client
      */
@@ -59,7 +59,7 @@ class LastfmTest extends TestCase
         $lastfm->userInfo('myUserName')->get();
 
         $this->assertHasSubstring('format=json', $this->getQueryFromCallHistory($callHistory));
-        $this->assertHasSubstring('api_key='.$this->lastfm_api_key, $this->getQueryFromCallHistory($callHistory));
+        $this->assertHasSubstring('api_key=' . $this->lastfm_api_key, $this->getQueryFromCallHistory($callHistory));
     }
 
     /** @test */
@@ -321,4 +321,19 @@ class LastfmTest extends TestCase
         $this->assertNotEmpty($now_playing);
         $this->assertArrayHasKey('artist', $now_playing);
     }
+
+    /** @test */
+    public function getPlayCountSum_returns_correct_sum()
+    {
+        $callHistory = [];
+
+        $expectedCount = 43;
+        $client = $this->getPreparedHttpClient(200, LastfmMockResponses::userWeeklyTopAlbumsFilteredTwo(), $callHistory);
+
+        $lastfm = new Lastfm($client, 'fakeApiKey');
+        $actualCount = $lastfm->userTopAlbums('anyUserName')->getPlayCountSum();
+
+        self::assertEquals($expectedCount,$actualCount);
+    }
+
 }
